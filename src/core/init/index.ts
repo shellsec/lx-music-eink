@@ -11,7 +11,6 @@ import { initDeeplink } from './deeplink'
 import { setApiSource } from '@/core/apiSource'
 import commonActions from '@/store/common/action'
 import settingState from '@/store/setting/state'
-import { checkUpdate } from '@/core/version'
 import { bootLog } from '@/utils/bootLog'
 import { cheatTip } from '@/utils/tools'
 import { USER_API_AUTO_ID } from '@/sources/builtin'
@@ -24,7 +23,7 @@ const handlePushedHomeScreen = async() => {
   if (settingState.setting['common.isAgreePact']) {
     if (isFirstPush) {
       isFirstPush = false
-      void checkUpdate()
+      // 墨水屏 fork：不冷启动检查上游版本，避免弹窗引导安装官方包导致丢失内置音源
       void initDeeplink()
     }
   } else {
