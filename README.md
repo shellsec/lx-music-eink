@@ -77,22 +77,34 @@
 
 ### 3. 公开资料中的常见 Android 墨水屏
 
-下列仅整理公开来源中的系统/ABI 线索，**均未在本仓库实机验证**，不构成兼容承诺。公开资料未写明 ABI 的，请在设备上自查后再选安装包。
+下列仅整理公开来源中的**型号 / 系统 / ABI**线索，**均未在本仓库实机验证**，不构成兼容承诺。选包只看 **ABI + Android ≥ 5.0**，不要用屏幕尺寸当条件。公开资料未写明 ABI 的，建议安装包装为「ABI 未知，先自查再选」。
 
-| 型号 / 系列 | 系统（公开资料） | ABI（若已知） | 建议安装包 | 备注与来源 |
+| 型号 | 系统 | ABI | 建议安装包 | 备注（未在本仓库实机验证 + 来源） |
 |---|---|---|---|---|
-| 口袋阅二代 | 基于 Android Go 的 64 位定制系统 | 公开资料未写明 ABI（仅称「64 位系统」），需在设备上自查 | 自查 ABI 后选对应包 | [新浪众测《口袋阅2电纸书评测》](https://zhongce.sina.com.cn/interface/article/view/69740/)、[百度百科「口袋阅」](https://baike.baidu.com/item/%E5%8F%A3%E8%A2%8B%E9%98%85/23464848) |
-| 文石 BOOX 多型号（Note / Nova / Leaf / Poke / Max 等） | 因型号而异，常见 Android 6 / 9 / 10 / 11 / 12 / 13 等开放 Android | 公开资料多数未写明 ABI，需在设备上自查 | 自查 ABI 后选对应包 | [BOOX 固件/系统更新页](https://www.boox.com.hk/pages/system-update)（按 Android 大版本列出机型） |
-| 文石 BOOX Go 7 | 开放式 Android 13 | CPU-Z 显示 `aarch64`（对应 `arm64-v8a`） | `lx-music-mobile-v1.9.1-arm64-v8a.apk` | [Read with Pro《Boox 文石 Go 7 规格整理》](https://www.readwithpro.com/devices/boox-go-7)（含 CPU-Z：Snapdragon 750G / aarch64） |
-| 海信阅读手机 A9 | 基于 Android 11 的 Ink OS（开放，可装第三方应用） | 公开资料未写明 ABI，需在设备上自查 | 自查 ABI 后选对应包 | [IT之家：海信阅读手机 A9 正式发布](https://www.ithome.com/0/617/918.htm) |
-| 海信彩墨屏阅读手机 A5C | Android P（Vision 7.0） | 公开资料未写明 ABI，需在设备上自查 | 自查 ABI 后选对应包 | [天极网：海信 A5C 参数页](https://product.yesky.com/product/1093/1093829/param.shtml) |
-| 墨案迷你阅 | Android 8.1 | 公开资料未写明 ABI，需在设备上自查 | 自查 ABI 后选对应包 | [腾讯新闻：墨案迷你阅 Plus 上手文](https://news.qq.com/rain/a/20220601A048J500)（文中对比标准版为 Android 8.1） |
-| 墨案迷你阅 Plus | Android 11 开放系统 | 公开资料未写明 ABI，需在设备上自查 | 自查 ABI 后选对应包 | [腾讯新闻](https://news.qq.com/rain/a/20220601A048J500)、[IT之家：迷你阅 Plus 软件升级](https://www.ithome.com/0/708/108.htm) |
-| Bigme B751 | 开放 Android 11 | 公开资料未写明 ABI，需在设备上自查 | 自查 ABI 后选对应包 | [Bigme 官方商店 B751](https://store.bigme.vip/products/bigme-7inch-b751-black-white-e-reader)、[Good e-Reader：First Look at the Bigme B751](https://goodereader.com/blog/electronic-readers/first-look-at-the-bigme-b751-e-reader) |
-| Bigme B751C S / B7 Pro 等新机 | 公开资料称 Android 14 开放系统（具体以机型为准） | 公开资料未写明 ABI，需在设备上自查 | 自查 ABI 后选对应包 | [デイリーガジェット：Bigme B751C S](https://daily-gadget.net/smartphone_tablet/103643/)、[知乎：Bigme B7 Pro](https://www.zhihu.com/tardis/jm/art/1998434246252069236) |
-| Meebook（皓擎）M6C | 开放式 Android 11 | 公开资料未写明 ABI，需在设备上自查 | 自查 ABI 后选对应包 | [Read with Pro《Meebook M6C 规格整理》](https://www.readwithpro.com/devices/meebook-m6c) |
-| Meebook（皓擎）M8 / M8C 等 | 开放式 Android 14（以机型页为准） | 公开资料未写明 ABI，需在设备上自查 | 自查 ABI 后选对应包 | [Read with Pro《Meebook 皓擎 品牌页》](https://www.readwithpro.com/brands/Meebook%20%E7%9A%93%E6%93%8E) |
-| 掌阅 iReader（Ocean / Smart / Light / Neo 等） | 基于 Android 的定制 SmartOS；部分机型可装第三方应用，部分较封闭 | 公开资料未写明 ABI，需在设备上自查 | 自查 ABI 后选对应包；并确认本机是否允许安装第三方 APK | [IT之家：iReader Ocean 4 系列发布](https://www.ithome.com/0/783/530.htm)、[知乎：掌阅怎么选 / 第三方软件](https://www.zhihu.com/tardis/bd/art/689972947) |
+| 口袋阅二代 | 基于 Android Go 的 64 位定制系统 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [新浪众测《口袋阅2电纸书评测》](https://zhongce.sina.com.cn/interface/article/view/69740/)、[电子发烧友：四核 A53](https://m.elecfans.com/article/1136524.html) |
+| 文石 BOOX Go 7 | 开放式 Android 13 | `arm64-v8a`（CPU-Z：`aarch64`） | `lx-music-mobile-v1.9.1-arm64-v8a.apk` | [Read with Pro《Boox 文石 Go 7 规格整理》](https://www.readwithpro.com/devices/boox-go-7)（Snapdragon 750G / aarch64） |
+| 文石 BOOX Palma | 开放式 Android 11 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [Temblast《Onyx Boox Models》](https://www.temblast.com/ref/onyx.htm)、[Device Info HW：Palma](http://www.deviceinfohw.ru/devices/item.php?item=122060)（SDM662） |
+| 文石 BOOX Palma 2 | 开放式 Android 13 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [Temblast《Onyx Boox Models》](https://www.temblast.com/ref/onyx.htm) |
+| 文石 BOOX Note Air3 / Note Air3 C | 开放式 Android 12 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [BOOX 官方商店 Note Air3](https://shop.boox.com/zh/products/boox-note-air3)、[Temblast《Onyx Boox Models》](https://www.temblast.com/ref/onyx.htm) |
+| 文石 BOOX Go Color 7 | 开放式 Android 12 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [Temblast《Onyx Boox Models》](https://www.temblast.com/ref/onyx.htm) |
+| 文石 BOOX Tab Ultra C Pro | 开放式 Android 12 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [BOOX 官方商店 Tab Ultra C Pro](https://shop.boox.com/zh/products/tabultracpro) |
+| 海信阅读手机 A9 | 基于 Android 11 的 Ink OS（开放，可装第三方应用） | `arm64-v8a`（设备信息 dump；兼容列表含 v7a） | `lx-music-mobile-v1.9.1-arm64-v8a.apk` | [aimindseye/hisense-a9 `deviceInfo.md`](https://github.com/aimindseye/hisense-a9/blob/main/deviceInfo.md)、[IT之家：海信 A9 正式发布](https://www.ithome.com/0/617/918.htm) |
+| 海信彩墨屏阅读手机 A5C | Vision 7.0（Android 9） | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [Read with Pro《Hisense A5C》](https://www.readwithpro.com/devices/hisense-a5c)、[天极网：海信 A5C 参数页](https://product.yesky.com/product/1093/1093829/param.shtml) |
+| 墨案迷你阅（inkPalm 5） | Android 8.1 | `armeabi-v7a`（公开资料称 32-bit ARM / Cortex-A7） | `lx-music-mobile-v1.9.1-armeabi-v7a.apk` | [qwerty12/inkPalm-5-EPD105-root](https://github.com/qwerty12/inkPalm-5-EPD105-root)（Allwinner 32-bit ARM B300）、[MOAAN inkPalm5 说明书](https://manuals.plus/m/1013a4ce313dbb06c0c9da76eea48db9f3c0faeabd9d3fb023a90aabf32faa17_optim.pdf) |
+| 墨案迷你阅 Plus | Android 11 开放系统 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [腾讯新闻：迷你阅 Plus 上手](https://news.qq.com/rain/a/20220601A048J500)、[IT之家：迷你阅 Plus 软件升级](https://www.ithome.com/0/708/108.htm) |
+| Bigme B751 / B751C | 开放 Android 11 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [Bigme 商店 B751](https://store.bigme.vip/products/bigme-7inch-b751-black-white-e-reader)、[eWritable：B751C](https://ewritable.net/brands/bigme/tablets/bigme-b751c/)（Helio P35） |
+| Bigme B751C S | 开放 Android 14 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [デイリーガジェット：Bigme B751C S](https://daily-gadget.net/smartphone_tablet/103643/)、[Read with Pro《B751C》](https://www.readwithpro.com/devices/bigme-b751c) |
+| Bigme B7 / B7 Pro | 开放 Android 14（以机型页为准） | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [Bigme 商店 B7](https://store.bigme.vip/products/bigme-b7-7-color-epaper-tablet-with-4g-calling)、[Read with Pro《B751C》相关机型](https://www.readwithpro.com/devices/bigme-b751c) |
+| Meebook（皓擎）M6 / M6C | 开放式 Android 11 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [Read with Pro《Meebook M6》](https://www.readwithpro.com/devices/meebook-m6)、[Read with Pro《Meebook M6C》](https://www.readwithpro.com/devices/meebook-m6c) |
+| Meebook（皓擎）M8 / M8C | 开放式 Android 14 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [Good e-Reader：Meebook M8](https://goodereader.com/blog/reviews/meebook-m8-e-reader-review)、[Read with Pro《Meebook M8》](https://www.readwithpro.com/devices/meebook-m8) |
+| Meebook（皓擎）G7C | 开放式 Android 14 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [Read with Pro《Meebook G7C》](https://www.readwithpro.com/devices/meebook-g7c-7-color) |
+| 掌阅 iReader Ocean 4 / Ocean 4 Turbo | SmartOS 2.2（基于 Android 定制；公开资料未写底层 Android 大版本） | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [IT之家：Ocean 4 系列发布](https://www.ithome.com/0/783/530.htm)、[Good e-Reader：Ocean 4 Turbo](https://goodereader.com/blog/electronic-readers/new-ocean-4-turbo-series-boasts-faster-displays-more-ergonomic-design)（可装第三方 APK） |
+| 掌阅 iReader Smart X3 | SmartOS（基于 Android；可侧载 APK） | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [新浪众测：掌阅 Smart X3](https://zhongce.sina.com.cn/iframe/article/view/174998/) |
+| 汉王 Clear6 Pro | Android 11 开放系统 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [新浪众测：汉王 Clear 6 Pro](https://zhongce.sina.com.cn/iframe/article/view/186956/)（RK3566） |
+| 汉王 N10 | Android 11 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [砍柴网：汉王 N10 评测](http://www.ikanchai.com/article/20220707/487800.shtml) |
+| 汉王 N10 Pro / N10 二代 | Android 14 | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [汉王官网：N10 二代](https://www.hw99.com/index.php?a=show&c=index&catid=66&id=389&m=content)、[腾讯新闻：N10 Pro](https://news.qq.com/rain/a/20240808A082E900) |
+| 科大讯飞（咪咕）R1 | 基于 Android 8.1 的定制系统（默认难装第三方 APK） | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | [ZOL：R1 pro 参数](https://detail.zol.com.cn/1382/1381915/param.shtml)、[einkCN：咪咕讯飞 R1 评测](https://einkcn.com/post/933.html) |
+| 科大讯飞智能办公本（Air / X 等） | 基于 Android 的定制系统（多数机型限制第三方安装） | 公开资料未写 ABI，装前在设备上自查 | ABI 未知，先自查再选 | 公开资料多强调安装限制；能否装本 APK 以本机权限为准 |
 
 **内置音源**（默认「自动切换」）：野花 → 六音 → Huibq → ikun → 野草 → 综合API → 全都要。取播放地址失败时按此顺序换源；成功源仅本会话优先，重启后仍从野花再试。播放器仍走洛雪原链路；榜单/搜索逻辑不变。
 
