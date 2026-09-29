@@ -23,7 +23,7 @@ Open source takes effort — sponsorship is welcome:
 
 <p align="center"><a href="https://github.com/shellsec/lx-music-eink"><img width="200" src="https://github.com/lyswhut/lx-music-mobile/blob/master/doc/images/icon.png" alt="lx-music logo"></a></p>
 
-<h1 align="center">Luoxue Music E-ink Edition</h1>
+<h1 align="center">LX Music Android E-ink Edition</h1>
 
 <p align="center">
   <a href="https://github.com/shellsec/lx-music-eink/releases"><img src="https://img.shields.io/github/release/shellsec/lx-music-eink" alt="Release version"></a>
@@ -33,7 +33,7 @@ Open source takes effort — sponsorship is welcome:
 
 <p align="center">Build status: see upstream <a href="https://github.com/lyswhut/lx-music-mobile">LX Music Mobile</a></p>
 
-<p align="center">Luoxue Music E-ink Edition, built with React Native, forked from LX Music Mobile.</p>
+<p align="center">LX Music Android E-ink Edition, built with React Native, forked from LX Music Mobile.</p>
 
 ### Why this build
 
@@ -41,7 +41,7 @@ Open source takes effort — sponsorship is welcome:
 
 Verified on Koudaoyue / 口袋阅 (Android 8.1, `armeabi-v7a` only): install and playback passed. This repo ships an Android APK; it is **not** a hardware display driver.
 
-Home screen (Luoxue Music E-ink Edition):
+Home screen (LX Music Android E-ink Edition):
 
 ![Koudaoyue home](docs/screenshots/home.jpg)
 

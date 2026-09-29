@@ -23,7 +23,7 @@
 
 <p align="center"><a href="https://github.com/shellsec/lx-music-eink"><img width="200" src="https://github.com/lyswhut/lx-music-mobile/blob/master/doc/images/icon.png" alt="lx-music logo"></a></p>
 
-<h1 align="center">落雪音乐墨水屏版</h1>
+<h1 align="center">洛雪音乐安卓端墨水屏版</h1>
 
 <p align="center">
   <a href="https://github.com/shellsec/lx-music-eink/releases"><img src="https://img.shields.io/github/release/shellsec/lx-music-eink" alt="Release version"></a>
@@ -33,7 +33,7 @@
 
 <p align="center">构建状态见上游：<a href="https://github.com/lyswhut/lx-music-mobile">洛雪音乐移动版</a></p>
 
-<p align="center">落雪音乐墨水屏版，基于 React Native，fork 自洛雪音乐移动版。</p>
+<p align="center">洛雪音乐安卓端墨水屏版，基于 React Native，fork 自洛雪音乐移动版。</p>
 
 ### 优点
 
@@ -41,7 +41,7 @@
 
 已在口袋阅（Android 8.1、仅 `armeabi-v7a`）安装并播放验证通过。本仓库是 Android APK，**不是**硬件屏驱。
 
-桌面（落雪音乐墨水屏版）：
+桌面（洛雪音乐安卓端墨水屏版）：
 
 ![口袋阅桌面](docs/screenshots/home.jpg)
 
