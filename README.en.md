@@ -68,6 +68,11 @@ Root-level APKs are **local build artifacts** and are gitignored by default (bui
 | `lx-music-mobile-v1.9.1-armeabi-v7a.apk` (~23MB) | `armeabi-v7a` | 32-bit-only devices such as Koudaoyue |
 | `lx-music-mobile-v1.9.1-arm64-v8a.apk` (~26MB) | `arm64-v8a` | Pure 64-bit / arm64-first e-ink devices |
 
+#### Download (accelerated)
+
+- armeabi-v7a (32-bit, e.g. Koudaoyue): [Accelerated download v7a](https://gh-proxy.org/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.1/lx-music-mobile-v1.9.1-armeabi-v7a.apk)
+- arm64-v8a (64-bit e-ink): [Accelerated download arm64](https://gh-proxy.org/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.1/lx-music-mobile-v1.9.1-arm64-v8a.apk)
+
 Package `cn.toside.music.mobile`, minSdk 21 (Android 5.0+). A 32-bit-only APK will not install on pure 64-bit devices; an arm64-only APK will not install on Koudaoyue with only `armeabi-v7a`. If unsure, check on-device with CPU-Z / About phone, or `adb shell getprop ro.product.cpu.abi`.
 
 ### 3. Common Android e-ink devices (public specs only)

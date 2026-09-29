@@ -68,6 +68,11 @@
 | `lx-music-mobile-v1.9.1-armeabi-v7a.apk`（约 23MB） | `armeabi-v7a` | 口袋阅等 **只有 32 位** 的设备 |
 | `lx-music-mobile-v1.9.1-arm64-v8a.apk`（约 26MB） | `arm64-v8a` | 纯 64 位或主推 arm64 的墨水屏 |
 
+#### 下载（加速）
+
+- armeabi-v7a（口袋阅等 32 位）：[加速下载 v7a](https://gh-proxy.org/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.1/lx-music-mobile-v1.9.1-armeabi-v7a.apk)
+- arm64-v8a（64 位墨水屏）：[加速下载 arm64](https://gh-proxy.org/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.1/lx-music-mobile-v1.9.1-arm64-v8a.apk)
+
 包名 `cn.toside.music.mobile`，minSdk 21（Android 5.0+）。32 位包装不上纯 64 位机；64 位包装不上只有 `armeabi-v7a` 的口袋阅。不确定时在设备上用 CPU-Z /「关于本机」或 `adb shell getprop ro.product.cpu.abi` 自查后再选包。
 
 ### 3. 公开资料中的常见 Android 墨水屏
