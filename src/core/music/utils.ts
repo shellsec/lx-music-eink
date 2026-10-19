@@ -315,9 +315,9 @@ export const handleGetOnlineMusicUrl = async({ musicInfo, quality, onToggleSourc
     console.log(err)
     // 仅在「取播放地址」层：当前自定义源失败后按序切换内置源重试同一首歌
     try {
-      const { isAutoOrBuiltinApiSource, tryBuiltinMusicUrlFailover } = await import('@/core/userApiFailover')
+      const { buildMusicFailoverKey, isAutoOrBuiltinApiSource, tryBuiltinMusicUrlFailover } = await import('@/core/userApiFailover')
       if (isAutoOrBuiltinApiSource()) {
-        const result = await tryBuiltinMusicUrlFailover(tryOnce)
+        const result = await tryBuiltinMusicUrlFailover(tryOnce, buildMusicFailoverKey(musicInfo))
         return { musicInfo, url: result.url, quality: result.type, isFromCache: false }
       }
     } catch (failoverErr: any) {

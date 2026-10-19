@@ -1,3 +1,5 @@
+import { storageDataPrefix } from '@/config/constant'
+import { getData, saveData } from '@/plugins/storage'
 import {
   BUILTIN_USER_APIS,
   BUILTIN_USER_API_IDS,
@@ -5,8 +7,17 @@ import {
   getBuiltinScript,
   type BuiltinUserApi,
 } from './index'
-import { getUserApiList, saveBuiltinUserApi } from '@/utils/data'
+import { getStoredUserApiScript, getUserApiList, saveBuiltinUserApi } from '@/utils/data'
 import { setUserApiList } from '@/core/userApi'
+import {
+  getManagedSourceIds,
+  hashScript,
+  isManagedSourceId,
+  setFallbackBuiltinIds,
+  setLocalCatalog,
+  type LocalSourceRecord,
+  type ScriptToSave,
+} from '@/sources/catalogState'
 
 export { USER_API_AUTO_ID, BUILTIN_USER_APIS, BUILTIN_USER_API_IDS, getBuiltinScript }
 
@@ -25,9 +36,11 @@ let preferredBuiltinId: string | null = null
 /** 当前实际已 loadScript 的内置源（auto 模式下不等于 setting 里的 user_api_auto） */
 let loadedBuiltinId: string | null = null
 
+setFallbackBuiltinIds(BUILTIN_USER_API_IDS)
+
 export const getPreferredBuiltinId = () => preferredBuiltinId
 export const setPreferredBuiltinId = (id: string | null) => {
-  preferredBuiltinId = id && BUILTIN_USER_API_IDS.includes(id) ? id : null
+  preferredBuiltinId = id && isManagedSourceId(id) ? id : null
 }
 export const getLoadedBuiltinId = () => loadedBuiltinId
 export const setLoadedBuiltinId = (id: string | null) => {
@@ -35,67 +48,94 @@ export const setLoadedBuiltinId = (id: string | null) => {
 }
 
 export const resolveInitialBuiltinId = (): string => {
-  if (preferredBuiltinId && BUILTIN_USER_API_IDS.includes(preferredBuiltinId)) return preferredBuiltinId
-  return BUILTIN_USER_APIS[0]?.id ?? ''
+  const ids = getManagedSourceIds()
+  if (preferredBuiltinId && ids.includes(preferredBuiltinId)) return preferredBuiltinId
+  return ids[0] ?? ''
 }
 
-/** 按「成功优先 → 其余按清单顺序」生成尝试队列 */
+/** 按「成功优先 → 其余按当前本地名单顺序」生成尝试队列 */
 export const getBuiltinFailoverOrder = (exclude: string[] = []): string[] => {
-  const ids = BUILTIN_USER_API_IDS.filter((id) => !exclude.includes(id))
+  const ids = getManagedSourceIds().filter(id => !exclude.includes(id))
   if (!preferredBuiltinId || !ids.includes(preferredBuiltinId)) return ids
-  return [preferredBuiltinId, ...ids.filter((id) => id !== preferredBuiltinId)]
+  return [preferredBuiltinId, ...ids.filter(id => id !== preferredBuiltinId)]
 }
 
-/**
- * 确保全部内置自定义音源写入本地列表；并插入「自动切换」虚拟项。
- * 脚本内容每次启动覆盖，避免旧缓存。
- */
-export const ensureBuiltinUserApis = async(): Promise<LX.UserApi.UserApiInfo[]> => {
-  await getUserApiList()
-  let list: LX.UserApi.UserApiInfo[] = []
-  for (const api of BUILTIN_USER_APIS) {
-    const info: LX.UserApi.UserApiInfo = {
-      id: api.id,
-      name: api.name,
-      description: `内置 ${api.name}，用于解析播放地址`,
-      author: api.author,
-      homepage: '',
-      version: api.version,
-      allowShowUpdateAlert: false,
-    }
-    list = await saveBuiltinUserApi(info, api.script)
-  }
-  // 虚拟「自动切换」只进列表，不存脚本；并剔除已废弃的星海等项
+const toInfo = (item: Pick<LocalSourceRecord, 'id' | 'name' | 'author' | 'version'>): LX.UserApi.UserApiInfo => ({
+  id: item.id,
+  name: item.name,
+  description: `内置 ${item.name}，用于解析播放地址`,
+  author: item.author,
+  homepage: '',
+  version: item.version,
+  allowShowUpdateAlert: false,
+})
+
+const publishUserApiList = async(catalog: LocalSourceRecord[]) => {
+  const managed = new Set(catalog.map(item => item.id))
   const deprecatedIds = new Set(['user_api_builtin_xinghai', 'user_api_flower_builtin'])
-  const withoutAuto = list
-    .filter((i) => i.id !== USER_API_AUTO_ID && !deprecatedIds.has(i.id))
-  // 保证内置项在前、自动第一；去掉重复 builtin
-  const builtinIds = new Set(BUILTIN_USER_API_IDS)
-  const extras = withoutAuto.filter((i) => !builtinIds.has(i.id))
-  const builtinInfos = BUILTIN_USER_APIS.map((api) => ({
-    id: api.id,
-    name: api.name,
-    description: `内置 ${api.name}，用于解析播放地址`,
-    author: api.author,
-    homepage: '',
-    version: api.version,
-    allowShowUpdateAlert: false,
-  }))
-  list = [AUTO_INFO, ...builtinInfos, ...extras]
-  // 再写一次列表顺序（自动在最前）
-  const { saveData } = await import('@/plugins/storage')
-  const { storageDataPrefix } = await import('@/config/constant')
+  const current = await getUserApiList()
+  const extras = current.filter(item => (
+    item.id !== USER_API_AUTO_ID && !managed.has(item.id) && !deprecatedIds.has(item.id)
+  ))
+  const list = [AUTO_INFO, ...catalog.map(toInfo), ...extras]
   await saveData(storageDataPrefix.userApi, list)
   setUserApiList(list)
   return list
 }
 
-export const toBuiltinInfo = (api: BuiltinUserApi): LX.UserApi.UserApiInfo => ({
+const recordFromBuiltin = (api: BuiltinUserApi, script: string): LocalSourceRecord => ({
+  key: api.key,
   id: api.id,
   name: api.name,
-  description: `内置 ${api.name}`,
+  url: api.url,
   author: api.author,
-  homepage: '',
   version: api.version,
-  allowShowUpdateAlert: false,
+  scriptHash: hashScript(script),
 })
+
+/**
+ * 没有本地名单时写入打包的内置音源。已有本地脚本不覆盖，也不访问远程。
+ */
+export const ensureBuiltinUserApis = async(): Promise<LX.UserApi.UserApiInfo[]> => {
+  await getUserApiList()
+  let catalog = await getData<LocalSourceRecord[]>(storageDataPrefix.userApiCatalog)
+  if (!catalog?.length) {
+    catalog = []
+    for (const api of BUILTIN_USER_APIS) {
+      const stored = await getStoredUserApiScript(api.id)
+      const script = stored || api.script
+      if (!stored && api.script) await saveBuiltinUserApi(toInfo(api), api.script)
+      catalog.push(recordFromBuiltin(api, script))
+    }
+    await saveData(storageDataPrefix.userApiCatalog, catalog)
+  } else {
+    let dirty = false
+    for (const item of catalog) {
+      const stored = await getStoredUserApiScript(item.id)
+      if (stored) continue
+      const bundled = getBuiltinScript(item.id)
+      if (!bundled) continue
+      await saveBuiltinUserApi(toInfo(item), bundled)
+      item.scriptHash = hashScript(bundled)
+      dirty = true
+    }
+    if (dirty) await saveData(storageDataPrefix.userApiCatalog, catalog)
+  }
+  setLocalCatalog(catalog)
+  return publishUserApiList(catalog)
+}
+
+/** 兜底确认名单或脚本变化后，写回本地名单与脚本。 */
+export const replaceLocalCatalog = async(next: LocalSourceRecord[], scriptsToSave: ScriptToSave[]) => {
+  await getUserApiList()
+  for (const item of scriptsToSave) {
+    const meta = next.find(source => source.id === item.id)
+    if (!meta) continue
+    await saveBuiltinUserApi(toInfo(meta), item.script)
+  }
+  setLocalCatalog(next)
+  await saveData(storageDataPrefix.userApiCatalog, next)
+  await publishUserApiList(next)
+}
+
+export const toBuiltinInfo = (api: BuiltinUserApi): LX.UserApi.UserApiInfo => toInfo(api)

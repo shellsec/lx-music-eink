@@ -1,6 +1,8 @@
 import settingState from '@/store/setting/state'
 import { updateSetting } from '@/core/common'
 import { setUserApi } from '@/core/userApi'
+import { claimOnce, isManagedSourceId } from '@/sources/catalogState'
+import { refreshSourcesIfChanged } from '@/sources/remoteFallback'
 import {
   BUILTIN_USER_API_IDS,
   USER_API_AUTO_ID,
@@ -37,7 +39,7 @@ const resetApiInitPromise = () => {
  * setting 可为 user_api_auto，实际运行的是具体 builtin id。
  */
 export const loadBuiltinUserApi = async(apiId: string) => {
-  if (!BUILTIN_USER_API_IDS.includes(apiId)) throw new Error('not builtin api')
+  if (!isManagedSourceId(apiId) && !BUILTIN_USER_API_IDS.includes(apiId)) throw new Error('not builtin api')
   if (getLoadedBuiltinId() === apiId && global.lx.apis && Object.keys(global.lx.apis).length) {
     return true
   }
@@ -60,24 +62,34 @@ export const activateAutoUserApi = async() => {
 }
 
 export const isAutoOrBuiltinApiSource = (apiId = settingState.setting['common.apiSource']) => {
-  return apiId === USER_API_AUTO_ID || BUILTIN_USER_API_IDS.includes(apiId)
+  return apiId === USER_API_AUTO_ID || isManagedSourceId(apiId) || BUILTIN_USER_API_IDS.includes(apiId)
+}
+
+const remoteFallbackClaimed = new Set<string>()
+
+export const buildMusicFailoverKey = (musicInfo: {
+  source?: string
+  id?: string | number
+  songmid?: string
+  name?: string
+  singer?: string
+  interval?: string | number | null
+}) => {
+  const id = musicInfo.songmid || musicInfo.id || `${musicInfo.name ?? ''}|${musicInfo.singer ?? ''}|${musicInfo.interval ?? ''}`
+  return `${musicInfo.source ?? ''}:${id}`
 }
 
 /**
  * 在原 musicUrl 失败后，按序切换内置自定义源并重试同一首歌。
  * 仅包在取播放地址层，不改变榜单/搜索。
  */
-export const tryBuiltinMusicUrlFailover = async(
-  tryOnce: () => Promise<{ url: string, type: LX.Quality }>
-): Promise<{ url: string, type: LX.Quality }> => {
+const tryLocalSources = async(
+  tryOnce: () => Promise<{ url: string, type: LX.Quality }>,
+  exclude: string[],
+) => {
   const settingId = settingState.setting['common.apiSource']
-  // 固定选中某个内置源时，也允许失败后自动试其余内置源
-  if (!isAutoOrBuiltinApiSource(settingId)) throw new Error('not auto mode')
-
-  const current = getLoadedBuiltinId() || (settingId === USER_API_AUTO_ID ? resolveInitialBuiltinId() : settingId)
-  const order = getBuiltinFailoverOrder(current ? [current] : [])
+  const order = getBuiltinFailoverOrder(exclude)
   let lastErr: Error | null = null
-
   for (const id of order) {
     try {
       console.log('[userApi failover] try', id)
@@ -87,8 +99,7 @@ export const tryBuiltinMusicUrlFailover = async(
         throw new Error('invalid music url')
       }
       setPreferredBuiltinId(id)
-      // 保持 setting 为自动；若用户手动选了具体内置源则记回该源
-      if (settingId !== USER_API_AUTO_ID && BUILTIN_USER_API_IDS.includes(settingId)) {
+      if (settingId !== USER_API_AUTO_ID && (isManagedSourceId(settingId) || BUILTIN_USER_API_IDS.includes(settingId))) {
         updateSetting({ 'common.apiSource': id })
       }
       return result
@@ -98,4 +109,32 @@ export const tryBuiltinMusicUrlFailover = async(
     }
   }
   throw lastErr ?? new Error('all builtin sources failed')
+}
+
+export const tryBuiltinMusicUrlFailover = async(
+  tryOnce: () => Promise<{ url: string, type: LX.Quality }>,
+  songKey = '',
+): Promise<{ url: string, type: LX.Quality }> => {
+  const settingId = settingState.setting['common.apiSource']
+  // 固定选中某个内置源时，也允许失败后自动试其余内置源
+  if (!isAutoOrBuiltinApiSource(settingId)) throw new Error('not auto mode')
+
+  const current = getLoadedBuiltinId() || (settingId === USER_API_AUTO_ID ? resolveInitialBuiltinId() : settingId)
+  try {
+    return await tryLocalSources(tryOnce, current ? [current] : [])
+  } catch (err) {
+    const lastErr = err instanceof Error ? err : new Error(String(err))
+    const key = songKey || 'current'
+    if (!claimOnce(remoteFallbackClaimed, key)) throw lastErr
+    let changed = false
+    try {
+      changed = await refreshSourcesIfChanged()
+    } catch (remoteErr) {
+      console.log('[userApi fallback]', remoteErr)
+      changed = false
+    }
+    if (!changed) throw lastErr
+    setLoadedBuiltinId(null)
+    return tryLocalSources(tryOnce, [])
+  }
 }

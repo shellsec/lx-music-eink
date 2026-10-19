@@ -6,6 +6,7 @@ import settingState from '@/store/setting/state'
 import { destroyUserApi, setUserApi } from './userApi'
 import apiSourceInfo from '@/utils/musicSdk/api-source-info'
 import { BUILTIN_USER_API_IDS, USER_API_AUTO_ID } from '@/sources/builtin'
+import { isManagedSourceId } from '@/sources/catalogState'
 import { setLoadedBuiltinId } from '@/sources/builtin/ensure'
 import { activateAutoUserApi } from './userApiFailover'
 
@@ -31,7 +32,7 @@ export const setApiSource = (apiId: string) => {
     })
   } else if (/^user_api/.test(apiId)) {
     setUserApi(apiId).then(() => {
-      if (BUILTIN_USER_API_IDS.includes(apiId)) setLoadedBuiltinId(apiId)
+      if (isManagedSourceId(apiId) || BUILTIN_USER_API_IDS.includes(apiId)) setLoadedBuiltinId(apiId)
     }).catch(err => {
       if (!global.lx.apiInitPromise[1]) global.lx.apiInitPromise[2](false)
       console.log(err)

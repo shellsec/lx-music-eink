@@ -6,6 +6,7 @@ import { fetchData } from './request'
 import { getUserApiList } from '@/utils/data'
 import { confirmDialog, openUrl, tipDialog } from '@/utils/tools'
 import { BUILTIN_USER_API_IDS, USER_API_AUTO_ID } from '@/sources/builtin'
+import { isManagedSourceId } from '@/sources/catalogState'
 import { setLoadedBuiltinId } from '@/sources/builtin/ensure'
 
 
@@ -80,11 +81,11 @@ export default async(setting: LX.AppSetting) => {
     // auto 模式下实际 load 的是具体 builtin id，允许匹配
     const matched = !!info && (
       info.id === settingId ||
-      (settingId === USER_API_AUTO_ID && BUILTIN_USER_API_IDS.includes(info.id))
+      (settingId === USER_API_AUTO_ID && (isManagedSourceId(info.id) || BUILTIN_USER_API_IDS.includes(info.id)))
     )
     if (!matched) return
     if (status) {
-      if (BUILTIN_USER_API_IDS.includes(info.id)) setLoadedBuiltinId(info.id)
+      if (isManagedSourceId(info.id) || BUILTIN_USER_API_IDS.includes(info.id)) setLoadedBuiltinId(info.id)
       if (info.sources) {
         let apis: any = {}
         let qualitys: LX.QualityList = {}

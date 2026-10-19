@@ -1,6 +1,7 @@
 import { getData, saveData, getAllKeys, removeDataMultiple, saveDataMultiple, removeData, getDataMultiple } from '@/plugins/storage'
 import { DEFAULT_SETTING, LIST_IDS, storageDataPrefix, type NAV_ID_Type } from '@/config/constant'
 import { BUILTIN_USER_API_IDS, USER_API_AUTO_ID, getBuiltinScript } from '@/sources/builtin'
+import { getManagedSourceIds } from '@/sources/catalogState'
 import { FLOWER_SCRIPT, FLOWER_USER_API_ID } from '@/sources/flower/script'
 import { throttle } from './common'
 // import { gzip, ungzip } from '@/utils/nativeModules/gzip'
@@ -520,17 +521,20 @@ export const getUserApiList = async(): Promise<LX.UserApi.UserApiInfo[]> => {
 
   return [...userApis]
 }
-export const getUserApiScript = async(id: string): Promise<string> => {
-  // 内置自定义音源：优先返回仓库内打包的脚本，避免存储被清空后无法播放
-  const builtin = getBuiltinScript(id)
-  if (builtin) return builtin
-  // 兼容旧版单一 Flower id
-  if (id === FLOWER_USER_API_ID) return FLOWER_SCRIPT
-  const script = await getData<string>(`${userApiPrefix}${id}`) ?? ''
-  return script
+export const getStoredUserApiScript = async(id: string): Promise<string> => {
+  return await getData<string>(`${userApiPrefix}${id}`) ?? ''
 }
 
-/** 写入/更新内置自定义音源（固定 id，启动时覆盖脚本） */
+export const getUserApiScript = async(id: string): Promise<string> => {
+  const stored = await getStoredUserApiScript(id)
+  if (stored) return stored
+  const builtin = getBuiltinScript(id)
+  if (builtin) return builtin
+  if (id === FLOWER_USER_API_ID) return FLOWER_SCRIPT
+  return ''
+}
+
+/** 写入或更新一条自定义音源及其脚本 */
 export const saveBuiltinUserApi = async(info: LX.UserApi.UserApiInfo, script: string): Promise<LX.UserApi.UserApiInfo[]> => {
   if (!userApis.length) userApis = await getData<LX.UserApi.UserApiInfo[]>(userApiPrefix) ?? []
   const idx = userApis.findIndex(api => api.id === info.id)
@@ -593,7 +597,7 @@ export const addUserApi = async(script: string): Promise<LX.UserApi.UserApiInfo>
 export const removeUserApi = async(ids: string[]) => {
   if (!userApis) return []
   // 内置自定义音源 / 自动切换不允许删除
-  const protectedIds = new Set([USER_API_AUTO_ID, FLOWER_USER_API_ID, ...BUILTIN_USER_API_IDS])
+  const protectedIds = new Set([USER_API_AUTO_ID, FLOWER_USER_API_ID, ...BUILTIN_USER_API_IDS, ...getManagedSourceIds()])
   const removeIds = ids.filter(id => !protectedIds.has(id))
   const _ids: string[] = []
   for (let index = userApis.length - 1; index > -1; index--) {
