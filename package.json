@@ -1,7 +1,7 @@
 {
   "name": "lx-music-mobile",
-  "version": "1.9.1",
-  "versionCode": 78,
+  "version": "1.9.2-eink.1",
+  "versionCode": 79,
   "private": true,
   "scripts": {
     "dev": "react-native run-android --active-arch-only",
@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lyswhut/lx-music-mobile.git"
+    "url": "git+https://github.com/shellsec/lx-music-eink.git"
   },
   "keywords": [
     "music-player",
@@ -40,9 +40,9 @@
   },
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/lyswhut/lx-music-mobile/issues"
+    "url": "https://github.com/shellsec/lx-music-eink/issues"
   },
-  "homepage": "https://github.com/lyswhut/lx-music-mobile#readme",
+  "homepage": "https://github.com/shellsec/lx-music-eink#readme",
   "dependencies": {
     "@craftzdog/react-native-buffer": "^6.1.2",
     "@react-native-async-storage/async-storage": "~2.1.2",

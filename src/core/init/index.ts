@@ -12,9 +12,9 @@ import { setApiSource } from '@/core/apiSource'
 import commonActions from '@/store/common/action'
 import settingState from '@/store/setting/state'
 import { bootLog } from '@/utils/bootLog'
+import { state as userApiState } from '@/store/userApi'
+import { USER_API_AUTO_ID } from '@/core/userApiFailover'
 import { cheatTip } from '@/utils/tools'
-import { USER_API_AUTO_ID } from '@/sources/builtin'
-import { ensureBuiltinUserApis } from '@/sources/builtin/ensure'
 import { ensureLocalMusicList } from '@/sources/localList'
 
 let isFirstPush = true
@@ -23,7 +23,7 @@ const handlePushedHomeScreen = async() => {
   if (settingState.setting['common.isAgreePact']) {
     if (isFirstPush) {
       isFirstPush = false
-      // 墨水屏 fork：不冷启动检查上游版本，避免弹窗引导安装官方包导致丢失内置音源
+      // 墨水屏 fork：不冷启动检查上游版本，避免启动弹窗
       void initDeeplink()
     }
   } else {
@@ -50,15 +50,10 @@ export default async() => {
   await initUserApi(setting)
   bootLog('User Api inited.')
 
-  // 内置自定义音源 +「自动切换」：写入列表，默认走自动（原 userApi / musicUrl）
-  await ensureBuiltinUserApis()
-  const legacyFlowerId = 'user_api_flower_builtin'
-  const apiSource = setting['common.apiSource']
-  if (!apiSource || apiSource === legacyFlowerId || apiSource === 'user_api_builtin_xinghai') {
-    updateSetting({ 'common.apiSource': USER_API_AUTO_ID })
-    setting['common.apiSource'] = USER_API_AUTO_ID
+  if (setting['common.apiSource'] !== USER_API_AUTO_ID && !userApiState.list.some(api => api.id === setting['common.apiSource'])) {
+    updateSetting({ 'common.apiSource': '' })
+    setting['common.apiSource'] = ''
   }
-  bootLog('Builtin User Apis ensured.')
 
   setApiSource(setting['common.apiSource'])
   bootLog('Api inited.')

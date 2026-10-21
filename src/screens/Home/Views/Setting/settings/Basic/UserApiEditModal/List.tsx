@@ -6,7 +6,7 @@ import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { useUserApiList, state as userApiState } from '@/store/userApi'
 import { useSettingValue } from '@/store/setting/hook'
-import { removeUserApi, setUserApiAllowShowUpdateAlert } from '@/core/userApi'
+import { moveUserApi, removeUserApi, setUserApiAllowShowUpdateAlert } from '@/core/userApi'
 import { BorderRadius } from '@/theme'
 import CheckBox from '@/components/common/CheckBox'
 import { Icon } from '@/components/common/Icon'
@@ -56,6 +56,12 @@ const ListItem = ({ item, activeId, onRemove, onChangeAllowShowUpdateAlert }: {
         <CheckBox check={item.allowShowUpdateAlert} label={t('user_api_allow_show_update_alert')} onChange={changeAllowShowUpdateAlert} size={0.86} />
       </View>
       <View style={styles.listItemRight}>
+        <TouchableOpacity style={styles.btn} onPress={() => { void moveUserApi(item.id, -1) }} accessibilityLabel="上移">
+          <Text>↑</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.btn} onPress={() => { void moveUserApi(item.id, 1) }} accessibilityLabel="下移">
+          <Text>↓</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.btn} onPress={handleRemove}>
           <Icon name="close" color={theme['c-button-font']} />
         </TouchableOpacity>

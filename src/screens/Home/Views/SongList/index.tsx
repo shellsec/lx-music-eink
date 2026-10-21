@@ -1,3 +1,5 @@
+import { useUserApiList } from '@/store/userApi'
+import Text from '@/components/common/Text'
 import { useEffect, useRef } from 'react'
 import settingState from '@/store/setting/state'
 import Content from './Content'
@@ -10,7 +12,7 @@ import type { InitState as CommonState } from '@/store/common/state'
 
 const MAX_WIDTH = scaleSizeW(560)
 
-export default () => {
+const SourceContent = () => {
   const drawer = useRef<DrawerLayoutFixedType>(null)
   const theme = useTheme()
 
@@ -55,4 +57,9 @@ export default () => {
       <Content />
     </DrawerLayoutFixed>
   )
+}
+
+export default () => {
+  const sources = useUserApiList()
+  return sources.length ? <SourceContent /> : <Text>请在设置中导入自定义源</Text>
 }

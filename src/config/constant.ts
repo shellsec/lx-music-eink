@@ -79,6 +79,7 @@ export const storageDataPrefix = {
 
   userApi: '@user_api__',
   userApiCatalog: '@user_api_catalog',
+  userApiSubscription: '@user_api_subscription',
 } as const
 
 // v0.x.x 版本的 data keys
@@ -114,10 +115,10 @@ export const NAV_MENUS = [
  * 在线「歌单」页保留代码但不进主导航，避免干扰主路径
  */
 export const VISIBLE_NAV_MENUS = NAV_MENUS.filter(menu => (
-  menu.id === 'nav_search'
-  || menu.id === 'nav_top'
-  || menu.id === 'nav_love'
-  || menu.id === 'nav_setting'
+  menu.id === 'nav_search' ||
+  menu.id === 'nav_top' ||
+  menu.id === 'nav_love' ||
+  menu.id === 'nav_setting'
 ))
 
 export type NAV_ID_Type = typeof NAV_MENUS[number]['id']

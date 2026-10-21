@@ -4,6 +4,14 @@ description: Setup Env
 runs:
   using: composite
   steps:
+    - name: Verify packages contain no custom source scripts
+      shell: python
+      run: |
+        import glob, subprocess, sys
+        packages = glob.glob('android/app/build/outputs/apk/release/*.apk')
+        if not packages:
+            raise SystemExit('No release APKs to verify')
+        subprocess.run([sys.executable, 'tools/check-package.py', *packages], check=True)
     - name: Upload Artifact arm64-v8a
       if: env.PACKAGE_TYPE != 'Android_5'
       uses: actions/upload-artifact@v4

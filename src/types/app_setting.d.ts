@@ -20,6 +20,8 @@ declare global {
        * api id
        */
       'common.apiSource': string
+      /** 用户自行填写的源清单订阅地址 */
+      'common.sourceSubscriptionUrl': string
 
       /**
        * 音源名称类型，原名、别名

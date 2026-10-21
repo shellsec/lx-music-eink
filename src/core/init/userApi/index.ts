@@ -1,13 +1,12 @@
 import { type InitParams, onScriptAction, sendAction, type ResponseParams, type UpdateInfoParams, type RequestParams } from '@/utils/nativeModules/userApi'
 import { log, setUserApiList, setUserApiStatus } from '@/core/userApi'
+import { USER_API_AUTO_ID, setLoadedUserApiId } from '@/core/userApiFailover'
+import { state as userApiState } from '@/store/userApi'
 import settingState from '@/store/setting/state'
 import BackgroundTimer from 'react-native-background-timer'
 import { fetchData } from './request'
 import { getUserApiList } from '@/utils/data'
 import { confirmDialog, openUrl, tipDialog } from '@/utils/tools'
-import { BUILTIN_USER_API_IDS, USER_API_AUTO_ID } from '@/sources/builtin'
-import { isManagedSourceId } from '@/sources/catalogState'
-import { setLoadedBuiltinId } from '@/sources/builtin/ensure'
 
 
 export default async(setting: LX.AppSetting) => {
@@ -78,14 +77,14 @@ export default async(setting: LX.AppSetting) => {
     // console.log(status, message, info)
     setUserApiStatus(status, errorMessage)
     const settingId = settingState.setting['common.apiSource']
-    // auto 模式下实际 load 的是具体 builtin id，允许匹配
+    // auto 模式下实际 load 的是具体用户源 id，允许匹配
     const matched = !!info && (
       info.id === settingId ||
-      (settingId === USER_API_AUTO_ID && (isManagedSourceId(info.id) || BUILTIN_USER_API_IDS.includes(info.id)))
+      (settingId === USER_API_AUTO_ID && userApiState.list.some(api => api.id === info.id))
     )
     if (!matched) return
     if (status) {
-      if (isManagedSourceId(info.id) || BUILTIN_USER_API_IDS.includes(info.id)) setLoadedBuiltinId(info.id)
+      setLoadedUserApiId(info.id)
       if (info.sources) {
         let apis: any = {}
         let qualitys: LX.QualityList = {}

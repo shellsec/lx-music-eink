@@ -1,10 +1,13 @@
+import { setApiSource } from '@/core/apiSource'
+import settingState from '@/store/setting/state'
 import { action, state } from '@/store/userApi'
-import { addUserApi, getUserApiScript, removeUserApi as removeUserApiFromStore, setUserApiAllowShowUpdateAlert as setUserApiAllowShowUpdateAlertFromStore } from '@/utils/data'
+import { moveUserApi as moveStoredUserApi, addUserApi, getUserApiScript, removeUserApi as removeUserApiFromStore, setUserApiAllowShowUpdateAlert as setUserApiAllowShowUpdateAlertFromStore } from '@/utils/data'
 import { destroy, loadScript } from '@/utils/nativeModules/userApi'
 import { log as writeLog } from '@/utils/log'
 
 
 export const setUserApi = async(apiId: string) => {
+  global.lx.apis = {}
   global.lx.qualityList = {}
   setUserApiStatus(false, 'initing')
 
@@ -15,6 +18,8 @@ export const setUserApi = async(apiId: string) => {
 }
 
 export const destroyUserApi = () => {
+  global.lx.apis = {}
+  global.lx.qualityList = {}
   destroy()
 }
 
@@ -35,6 +40,7 @@ export const importUserApi = async(script: string) => {
 export const removeUserApi = async(ids: string[]) => {
   const list = await removeUserApiFromStore(ids)
   action.setUserApiList(list)
+  if (!list.length || ids.includes(settingState.setting['common.apiSource'])) setApiSource('')
 }
 
 export const setUserApiAllowShowUpdateAlert = async(id: string, enable: boolean) => {
@@ -71,4 +77,8 @@ export const log = {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (global.lx.isEnableUserApiLog) writeLog.error(...params)
   },
+}
+
+export const moveUserApi = async(id: string, direction: -1 | 1) => {
+  action.setUserApiList(await moveStoredUserApi(id, direction))
 }

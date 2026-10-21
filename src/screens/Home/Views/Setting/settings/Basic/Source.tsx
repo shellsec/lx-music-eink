@@ -5,12 +5,14 @@ import { View } from 'react-native'
 import SubTitle from '../../components/SubTitle'
 import CheckBox from '@/components/common/CheckBox'
 import { createStyle } from '@/utils/tools'
+import { USER_API_AUTO_ID } from '@/core/userApiFailover'
 import { setApiSource } from '@/core/apiSource'
 import { useI18n } from '@/lang'
 import apiSourceInfo from '@/utils/musicSdk/api-source-info'
 import { useSettingValue } from '@/store/setting/hook'
 import { useStatus, useUserApiList } from '@/store/userApi'
 import Button from '../../components/Button'
+import SourceSubscription from './SourceSubscription'
 import UserApiEditModal, { type UserApiEditModalType } from './UserApiEditModal'
 import Text from '@/components/common/Text'
 import { useTheme } from '@/store/theme/hook'
@@ -98,6 +100,9 @@ export default memo(() => {
   return (
     <SubTitle title={t('setting_basic_source')}>
       <View style={styles.list}>
+        {!userApiList.length ? <Text>请在设置中导入自定义源</Text> : <>
+          <Item name="多源自动切换" id={USER_API_AUTO_ID} change={setApiSourceId} />
+        </>}
         {
           list.map(({ id, name }) => <Item name={name} id={id} key={id} change={setApiSourceId} />)
         }
@@ -108,6 +113,7 @@ export default memo(() => {
       <View style={styles.btn}>
         <Button onPress={handleShow}>{t('setting_basic_source_user_api_btn')}</Button>
       </View>
+      <SourceSubscription />
       <UserApiEditModal ref={modalRef} />
     </SubTitle>
   )

@@ -1,140 +1,79 @@
 import settingState from '@/store/setting/state'
-import { updateSetting } from '@/core/common'
+import { state } from '@/store/userApi'
 import { setUserApi } from '@/core/userApi'
-import { claimOnce, isManagedSourceId } from '@/sources/catalogState'
-import { refreshSourcesIfChanged } from '@/sources/remoteFallback'
-import {
-  BUILTIN_USER_API_IDS,
-  USER_API_AUTO_ID,
-  getBuiltinFailoverOrder,
-  getLoadedBuiltinId,
-  resolveInitialBuiltinId,
-  setLoadedBuiltinId,
-  setPreferredBuiltinId,
-} from '@/sources/builtin/ensure'
+import { refreshSubscriptionAfterFailure } from '@/core/sourceSubscription'
 
-const waitApiReady = async(timeoutMs = 25_000) => {
-  const ok = await Promise.race([
-    global.lx.apiInitPromise[0],
-    new Promise<boolean>((resolve) => {
-      setTimeout(() => { resolve(false) }, timeoutMs)
-    }),
-  ])
-  return ok
-}
+export const USER_API_AUTO_ID = 'user_api_auto'
+let loadedId = ''
+export const setLoadedUserApiId = (id: string) => { loadedId = id }
+export const isAutoApiSource = () => settingState.setting['common.apiSource'] === USER_API_AUTO_ID
 
-const resetApiInitPromise = () => {
-  if (!global.lx.apiInitPromise[1]) return
-  global.lx.apiInitPromise[0] = new Promise((resolve) => {
+const loadImportedApi = async(id: string) => {
+  if (!state.list.some(api => api.id === id)) throw new Error('source not imported')
+  global.lx.apiInitPromise[0] = new Promise(resolve => {
     global.lx.apiInitPromise[1] = false
-    global.lx.apiInitPromise[2] = (result: boolean) => {
+    global.lx.apiInitPromise[2] = result => {
       global.lx.apiInitPromise[1] = true
       resolve(result)
     }
   })
-}
-
-/**
- * 加载指定内置自定义音源脚本（洛雪原 setUserApi / loadScript）。
- * setting 可为 user_api_auto，实际运行的是具体 builtin id。
- */
-export const loadBuiltinUserApi = async(apiId: string) => {
-  if (!isManagedSourceId(apiId) && !BUILTIN_USER_API_IDS.includes(apiId)) throw new Error('not builtin api')
-  if (getLoadedBuiltinId() === apiId && global.lx.apis && Object.keys(global.lx.apis).length) {
-    return true
-  }
-  resetApiInitPromise()
-  await setUserApi(apiId)
-  const ok = await waitApiReady()
-  if (!ok) throw new Error('source init failed')
-  setLoadedBuiltinId(apiId)
-  return true
-}
-
-/** 启动或切换到「自动」时，加载优先内置源 */
-export const activateAutoUserApi = async() => {
-  const id = resolveInitialBuiltinId()
-  if (!id) throw new Error('no builtin api')
-  await loadBuiltinUserApi(id)
-  if (settingState.setting['common.apiSource'] !== USER_API_AUTO_ID) {
-    updateSetting({ 'common.apiSource': USER_API_AUTO_ID })
-  }
-}
-
-export const isAutoOrBuiltinApiSource = (apiId = settingState.setting['common.apiSource']) => {
-  return apiId === USER_API_AUTO_ID || isManagedSourceId(apiId) || BUILTIN_USER_API_IDS.includes(apiId)
-}
-
-const remoteFallbackClaimed = new Set<string>()
-
-export const buildMusicFailoverKey = (musicInfo: {
-  source?: string
-  id?: string | number
-  songmid?: string
-  name?: string
-  singer?: string
-  interval?: string | number | null
-}) => {
-  const id = musicInfo.songmid || musicInfo.id || `${musicInfo.name ?? ''}|${musicInfo.singer ?? ''}|${musicInfo.interval ?? ''}`
-  return `${musicInfo.source ?? ''}:${id}`
-}
-
-/**
- * 在原 musicUrl 失败后，按序切换内置自定义源并重试同一首歌。
- * 仅包在取播放地址层，不改变榜单/搜索。
- */
-const tryLocalSources = async(
-  tryOnce: () => Promise<{ url: string, type: LX.Quality }>,
-  exclude: string[],
-) => {
-  const settingId = settingState.setting['common.apiSource']
-  const order = getBuiltinFailoverOrder(exclude)
-  let lastErr: Error | null = null
-  for (const id of order) {
-    try {
-      console.log('[userApi failover] try', id)
-      await loadBuiltinUserApi(id)
-      const result = await tryOnce()
-      if (!result?.url || !/^https?:\/\//i.test(result.url)) {
-        throw new Error('invalid music url')
-      }
-      setPreferredBuiltinId(id)
-      if (settingId !== USER_API_AUTO_ID && (isManagedSourceId(settingId) || BUILTIN_USER_API_IDS.includes(settingId))) {
-        updateSetting({ 'common.apiSource': id })
-      }
-      return result
-    } catch (err: any) {
-      lastErr = err instanceof Error ? err : new Error(String(err?.message ?? err))
-      console.log('[userApi failover] fail', id, lastErr.message)
-    }
-  }
-  throw lastErr ?? new Error('all builtin sources failed')
-}
-
-export const tryBuiltinMusicUrlFailover = async(
-  tryOnce: () => Promise<{ url: string, type: LX.Quality }>,
-  songKey = '',
-): Promise<{ url: string, type: LX.Quality }> => {
-  const settingId = settingState.setting['common.apiSource']
-  // 固定选中某个内置源时，也允许失败后自动试其余内置源
-  if (!isAutoOrBuiltinApiSource(settingId)) throw new Error('not auto mode')
-
-  const current = getLoadedBuiltinId() || (settingId === USER_API_AUTO_ID ? resolveInitialBuiltinId() : settingId)
+  loadedId = id
+  let timer: ReturnType<typeof setTimeout> | undefined
   try {
-    return await tryLocalSources(tryOnce, current ? [current] : [])
-  } catch (err) {
-    const lastErr = err instanceof Error ? err : new Error(String(err))
-    const key = songKey || 'current'
-    if (!claimOnce(remoteFallbackClaimed, key)) throw lastErr
-    let changed = false
+    await setUserApi(id)
+    const ready = await Promise.race([
+      global.lx.apiInitPromise[0],
+      new Promise<boolean>(resolve => { timer = setTimeout(() => { resolve(false) }, 25000) }),
+    ])
+    if (!ready) throw new Error('source init failed')
+    loadedId = id
+  } catch (error) {
+    if (!global.lx.apiInitPromise[1]) global.lx.apiInitPromise[2](false)
+    throw error
+  } finally { clearTimeout(timer) }
+}
+
+export const activateAutoUserApi = async() => {
+  const first = state.list[0]
+  if (!first) throw new Error('请在设置中导入自定义源')
+  await loadImportedApi(first.id)
+}
+
+const tryImportedSources = async(
+  tryOnce: () => Promise<{ url: string, type: LX.Quality }>,
+  current: string,
+): Promise<{ url: string, type: LX.Quality }> => {
+  if (!isAutoApiSource()) throw new Error('automatic switching disabled')
+  let lastError: unknown = new Error('all imported sources failed')
+  for (const api of [...state.list]) {
+    if (!isAutoApiSource()) throw new Error('automatic switching disabled')
+    if (api.id === current) continue
     try {
-      changed = await refreshSourcesIfChanged()
-    } catch (remoteErr) {
-      console.log('[userApi fallback]', remoteErr)
-      changed = false
+      await loadImportedApi(api.id)
+      const result = await tryOnce()
+      if (!result.url || !/^https?:\/\//i.test(result.url)) throw new Error('invalid music url')
+      return result
+    } catch (error) { lastError = error }
+  }
+  throw lastError
+}
+
+export const buildMusicFailoverKey = (music: LX.Music.MusicInfoOnline) => `${music.source}:${music.id}`
+
+export const tryUserApiFailover = async(
+  tryOnce: () => Promise<{ url: string, type: LX.Quality }>,
+  songKey = 'current',
+): Promise<{ url: string, type: LX.Quality }> => {
+  try {
+    return await tryImportedSources(tryOnce, loadedId)
+  } catch (error) {
+    if (!isAutoApiSource()) throw error
+    let changed = false
+    try { changed = await refreshSubscriptionAfterFailure(songKey) } catch (refreshError) {
+      console.log('[subscription]', refreshError)
     }
-    if (!changed) throw lastErr
-    setLoadedBuiltinId(null)
-    return tryLocalSources(tryOnce, [])
+    if (!changed || !isAutoApiSource()) throw error
+    // A changed snapshot gets exactly one complete pass, including the previous source.
+    return tryImportedSources(tryOnce, '')
   }
 }

@@ -483,7 +483,7 @@
   "user_api_btn_import_online_input_confirm": "Import",
   "user_api_btn_import_online_input_loading": "Importing...",
   "user_api_btn_import_online_input_tip": "Please enter an HTTP link",
-  "user_api_empty": "It's actually empty here 😲",
+  "user_api_empty": "Import a custom source in Settings",
   "user_api_import_desc": "Choose Music API script file",
   "user_api_import_failed_tip": "Failed to import Music API: \n{message}",
   "user_api_import_success_tip": "Successfully imported 🎉",

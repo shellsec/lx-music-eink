@@ -1,8 +1,5 @@
 import { getData, saveData, getAllKeys, removeDataMultiple, saveDataMultiple, removeData, getDataMultiple } from '@/plugins/storage'
 import { DEFAULT_SETTING, LIST_IDS, storageDataPrefix, type NAV_ID_Type } from '@/config/constant'
-import { BUILTIN_USER_API_IDS, USER_API_AUTO_ID, getBuiltinScript } from '@/sources/builtin'
-import { getManagedSourceIds } from '@/sources/catalogState'
-import { FLOWER_SCRIPT, FLOWER_USER_API_ID } from '@/sources/flower/script'
 import { throttle } from './common'
 // import { gzip, ungzip } from '@/utils/nativeModules/gzip'
 // import { readFile, writeFile, temporaryDirectoryPath, unlink } from '@/utils/fs'
@@ -509,6 +506,14 @@ let userApis: LX.UserApi.UserApiInfo[] = []
 export const getUserApiList = async(): Promise<LX.UserApi.UserApiInfo[]> => {
   userApis = await getData<LX.UserApi.UserApiInfo[]>(userApiPrefix) ?? []
 
+  await removeData(storageDataPrefix.userApiCatalog)
+  const removed = userApis.filter(info => /^(user_api_builtin_|user_api_flower_|user_api_auto$)/.test(info.id))
+  if (removed.length) {
+    userApis = userApis.filter(info => !removed.includes(info))
+    await removeDataMultiple(removed.map(info => `${userApiPrefix}${info.id}`))
+    await saveData(userApiPrefix, userApis)
+  }
+
   // 移除 1.7.1 及之前版本的脚本数据被意外存储到列表中的问题
   let updated = false
   for (const info of userApis) {
@@ -526,25 +531,7 @@ export const getStoredUserApiScript = async(id: string): Promise<string> => {
 }
 
 export const getUserApiScript = async(id: string): Promise<string> => {
-  const stored = await getStoredUserApiScript(id)
-  if (stored) return stored
-  const builtin = getBuiltinScript(id)
-  if (builtin) return builtin
-  if (id === FLOWER_USER_API_ID) return FLOWER_SCRIPT
-  return ''
-}
-
-/** 写入或更新一条自定义音源及其脚本 */
-export const saveBuiltinUserApi = async(info: LX.UserApi.UserApiInfo, script: string): Promise<LX.UserApi.UserApiInfo[]> => {
-  if (!userApis.length) userApis = await getData<LX.UserApi.UserApiInfo[]>(userApiPrefix) ?? []
-  const idx = userApis.findIndex(api => api.id === info.id)
-  if (idx >= 0) userApis[idx] = { ...userApis[idx], ...info }
-  else userApis.unshift(info)
-  await saveDataMultiple([
-    [userApiPrefix, userApis],
-    [`${userApiPrefix}${info.id}`, script],
-  ])
-  return [...userApis]
+  return getStoredUserApiScript(id)
 }
 
 const INFO_NAMES = {
@@ -594,11 +581,19 @@ export const addUserApi = async(script: string): Promise<LX.UserApi.UserApiInfo>
   ])
   return apiInfo
 }
+export const moveUserApi = async(id: string, direction: -1 | 1) => {
+  const index = userApis.findIndex(api => api.id === id)
+  const next = index + direction
+  if (index >= 0 && next >= 0 && next < userApis.length) {
+    const [item] = userApis.splice(index, 1)
+    userApis.splice(next, 0, item)
+    await saveData(userApiPrefix, userApis)
+  }
+  return [...userApis]
+}
 export const removeUserApi = async(ids: string[]) => {
   if (!userApis) return []
-  // 内置自定义音源 / 自动切换不允许删除
-  const protectedIds = new Set([USER_API_AUTO_ID, FLOWER_USER_API_ID, ...BUILTIN_USER_API_IDS, ...getManagedSourceIds()])
-  const removeIds = ids.filter(id => !protectedIds.has(id))
+  const removeIds = ids
   const _ids: string[] = []
   for (let index = userApis.length - 1; index > -1; index--) {
     if (removeIds.includes(userApis[index].id)) {
@@ -615,4 +610,61 @@ export const setUserApiAllowShowUpdateAlert = async(id: string, enable: boolean)
   if (!targetApi) return
   targetApi.allowShowUpdateAlert = enable
   await saveData(userApiPrefix, userApis)
+}
+
+export interface SubscriptionSource {
+  id: string
+  name: string
+  url: string
+  script: string
+}
+interface SubscriptionCatalog {
+  address: string
+  signature: string
+  entries: Array<{ id: string, userApiId: string }>
+}
+
+/** Stage a complete subscription snapshot before persisting any changes. */
+export const applyUserApiSubscription = async(address: string, signature: string, sources: SubscriptionSource[]) => {
+  const list = await getUserApiList()
+  const previous = await getData<SubscriptionCatalog>(storageDataPrefix.userApiSubscription)
+  const oldEntries = previous?.address === address ? previous.entries : []
+  const storedScripts = new Map(await Promise.all(list.map(async info => [info.id, await getUserApiScript(info.id)] as const)))
+  const updates = new Map<string, { info: LX.UserApi.UserApiInfo, script: string }>()
+  const entries: SubscriptionCatalog['entries'] = []
+  let changed = previous?.address !== address || previous.signature !== signature
+  for (const source of sources) {
+    const header = /^\/\*[\S|\s]+?\*\//.exec(source.script)
+    if (!header || source.script.length > 9_000_000) throw new Error('无效的订阅源脚本')
+    const oldId = oldEntries.find(entry => entry.id === source.id)?.userApiId
+    const existing = list.find(info => info.id === oldId) ?? list.find(info => (
+      !updates.has(info.id) && storedScripts.get(info.id) === source.script
+    ))
+    const info: LX.UserApi.UserApiInfo = {
+      ...existing,
+      ...matchInfo(header[0]),
+      id: existing?.id ?? `user_api_${Math.random().toString().substring(2, 8)}_${Date.now()}`,
+      name: source.name,
+      allowShowUpdateAlert: existing?.allowShowUpdateAlert ?? true,
+    }
+    if (!existing || existing.name !== info.name || storedScripts.get(info.id) !== source.script) changed = true
+    updates.set(info.id, { info, script: source.script })
+    entries.push({ id: source.id, userApiId: info.id })
+  }
+  const removed = oldEntries.filter(entry => !entries.some(next => next.userApiId === entry.userApiId)).map(entry => entry.userApiId)
+  const nextList = list.filter(info => !removed.includes(info.id)).map(info => updates.get(info.id)?.info ?? info)
+  for (const { info } of updates.values()) {
+    if (!nextList.some(item => item.id === info.id)) nextList.push(info)
+  }
+  if (nextList.length > 20) throw new Error('自定义源总数不能超过 20 个')
+  if (!changed && !removed.length) return { changed: false, list }
+  const writes: Array<[string, unknown]> = [
+    [userApiPrefix, nextList],
+    [storageDataPrefix.userApiSubscription, { address, signature, entries }],
+    ...Array.from(updates, ([id, { script }]): [string, unknown] => [`${userApiPrefix}${id}`, script]),
+  ]
+  await saveDataMultiple(writes)
+  userApis = nextList
+  if (removed.length) await removeDataMultiple(removed.map(id => `${userApiPrefix}${id}`))
+  return { changed: true, list: [...nextList] }
 }

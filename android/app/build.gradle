@@ -205,3 +205,15 @@ dependencies {
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+
+// Custom scripts must only enter the app through user import.
+tasks.register("verifyNoBundledSources") {
+    doLast {
+        ["builtin", "flower", "scripts"].each { directory ->
+            if (file("../../src/sources/${directory}").exists()) {
+                throw new GradleException("Bundled custom source directory present: ${directory}")
+            }
+        }
+    }
+}
+tasks.named("preBuild").configure { dependsOn("verifyNoBundledSources") }

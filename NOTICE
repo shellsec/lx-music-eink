@@ -1,0 +1,9 @@
+LX Music Enhanced / 洛雪增强版
+Based on lyswhut/lx-music and lyswhut/lx-music-mobile.
+Copyright notices and Apache License 2.0 from upstream are retained in LICENSE and source files.
+
+Modifications: removed bundled custom source scripts and fixed source-list endpoints;
+empty source list on first launch; disabled automatic switching by default;
+restricted switching to user-imported scripts in list order; updated branding and documentation.
+
+Optional user-configured source subscription: persistent address, on-demand update checks after imported sources fail, bounded retry with request deduplication.

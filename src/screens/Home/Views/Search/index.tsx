@@ -1,3 +1,5 @@
+import { useUserApiList } from '@/store/userApi'
+import Text from '@/components/common/Text'
 import { useRef, useEffect } from 'react'
 import { type LayoutChangeEvent, View } from 'react-native'
 
@@ -22,7 +24,7 @@ interface SearchInfo {
   searchType: 'music' | 'songlist'
 }
 
-export default () => {
+const SourceContent = () => {
   const headerBarRef = useRef<HeaderBarType>(null)
   const searchTipListRef = useRef<TipListType>(null)
   const listRef = useRef<ListType>(null)
@@ -124,3 +126,8 @@ const styles = createStyle({
     flex: 1,
   },
 })
+
+export default () => {
+  const sources = useUserApiList()
+  return sources.length ? <SourceContent /> : <Text>请在设置中导入自定义源</Text>
+}
