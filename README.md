@@ -8,9 +8,9 @@
 
 | 架构 | 官方下载 | 加速下载 |
 | --- | --- | --- |
-| arm64-v8a · 64 位设备 | [GitHub](https://github.com/shellsec/lx-music-eink/releases/download/v1.9.2-eink.1/lx-music-mobile-v1.9.2-eink.1-arm64-v8a.apk) | [加速下载](https://ghfast.top/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.2-eink.1/lx-music-mobile-v1.9.2-eink.1-arm64-v8a.apk) |
-| armeabi-v7a · 32 位 / 较旧墨水屏设备 | [GitHub](https://github.com/shellsec/lx-music-eink/releases/download/v1.9.2-eink.1/lx-music-mobile-v1.9.2-eink.1-armeabi-v7a.apk) | [加速下载](https://ghfast.top/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.2-eink.1/lx-music-mobile-v1.9.2-eink.1-armeabi-v7a.apk) |
-| universal · 通用版（体积较大） | [GitHub](https://github.com/shellsec/lx-music-eink/releases/download/v1.9.2-eink.1/lx-music-mobile-v1.9.2-eink.1-universal.apk) | [加速下载](https://ghfast.top/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.2-eink.1/lx-music-mobile-v1.9.2-eink.1-universal.apk) |
+| arm64-v8a · 64 位设备 | [GitHub](https://github.com/shellsec/lx-music-eink/releases/download/v1.9.3-eink.1/lx-music-mobile-v1.9.3-eink.1-arm64-v8a.apk) | [加速下载](https://ghfast.top/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.3-eink.1/lx-music-mobile-v1.9.3-eink.1-arm64-v8a.apk) |
+| armeabi-v7a · 32 位 / 较旧墨水屏设备 | [GitHub](https://github.com/shellsec/lx-music-eink/releases/download/v1.9.3-eink.1/lx-music-mobile-v1.9.3-eink.1-armeabi-v7a.apk) | [加速下载](https://ghfast.top/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.3-eink.1/lx-music-mobile-v1.9.3-eink.1-armeabi-v7a.apk) |
+| universal · 通用版（体积较大） | [GitHub](https://github.com/shellsec/lx-music-eink/releases/download/v1.9.3-eink.1/lx-music-mobile-v1.9.3-eink.1-universal.apk) | [加速下载](https://ghfast.top/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.3-eink.1/lx-music-mobile-v1.9.3-eink.1-universal.apk) |
 
 [查看全部发布版本](https://github.com/shellsec/lx-music-eink/releases)
 
@@ -27,6 +27,12 @@
 ## 多源自动切换
 
 默认关闭。在设置中选择「多源自动切换」后，播放地址解析失败时，仅在用户导入的源之间按列表顺序重试，每个候选源最多尝试一次。选择具体源即可关闭多源自动切换。在自定义源管理中点击上移、下移按钮设置重试顺序，顺序会保存到本地。
+
+## 手机扫码网页配置
+
+在「设置 → 自定义源管理 → 导入 → HTTP 网页配置」中点击「开启 HTTP 网页」。让墨水屏设备与另一部手机连接同一 Wi-Fi，手机使用系统相机或扫一扫打开设备上显示的二维码，即可在浏览器里填写音源链接、上传脚本或保存订阅地址。也可以手动输入显示的 HTTP 地址，设备本身无需摄像头。
+
+网页配置默认关闭，不会随启动自动开启。二维码在本地生成，只在本次开启期间有效；关闭窗口、关闭 HTTP 网页或应用退到后台后，服务即停止。网页配置同样不会提供或推荐任何音源。
 
 ## 订阅更新
 

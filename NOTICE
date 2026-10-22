@@ -7,3 +7,5 @@ empty source list on first launch; disabled automatic switching by default;
 restricted switching to user-imported scripts in list order; updated branding and documentation.
 
 Optional user-configured source subscription: persistent address, on-demand update checks after imported sources fail, bounded retry with request deduplication.
+
+HTTP source configuration uses NanoHTTPD 2.3.1 (Copyright (c) 2012 - 2016, nanohttpd; BSD-3-Clause) and ZXing core 3.4.1 (ZXing authors; Apache-2.0). Their license texts are included in the APK under assets/licenses/. QR codes are generated locally; no camera permission is added.

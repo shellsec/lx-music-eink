@@ -4,6 +4,7 @@ import DorpDownMenu, { type DorpDownMenuProps as _DorpDownMenuProps } from '@/co
 import Text from '@/components/common/Text'
 import { useI18n } from '@/lang'
 import ScriptImportExport, { type ScriptImportExportType } from './ScriptImportExport'
+import SourceWebConfig, { type SourceWebConfigType } from './SourceWebConfig'
 import ScriptImportOnline, { type ScriptImportOnlineType } from './ScriptImportOnline'
 import { state } from '@/store/userApi'
 import { tipDialog } from '@/utils/tools'
@@ -20,18 +21,21 @@ export default ({ btnStyle }: BtnProps) => {
   const theme = useTheme()
   const scriptImportExportRef = useRef<ScriptImportExportType>(null)
   const scriptImportOnlineRef = useRef<ScriptImportOnlineType>(null)
+  const sourceWebRef = useRef<SourceWebConfigType>(null)
 
   const importTypes = useMemo(() => {
     return [
       { action: 'local', label: t('user_api_btn_import_local') },
       { action: 'online', label: t('user_api_btn_import_online') },
+      { action: 'web', label: 'HTTP 网页配置' },
     ] as const
   }, [t])
 
   type DorpDownMenuProps = _DorpDownMenuProps<typeof importTypes>
 
   const handleAction: DorpDownMenuProps['onPress'] = ({ action }) => {
-    if (state.list.length > 20) {
+    if (action === 'web') { sourceWebRef.current?.show(); return }
+    if (state.list.length >= 20) {
       void tipDialog({
         message: t('user_api_max_tip'),
         btnText: t('ok'),
@@ -57,6 +61,7 @@ export default ({ btnStyle }: BtnProps) => {
       <Text size={14} color={theme['c-button-font']}>{t('user_api_btn_import')}</Text>
       <ScriptImportExport ref={scriptImportExportRef} />
       <ScriptImportOnline ref={scriptImportOnlineRef} />
+      <SourceWebConfig ref={sourceWebRef} />
     </DorpDownMenu>
   )
 }

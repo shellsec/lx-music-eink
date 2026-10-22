@@ -8,9 +8,9 @@ Choose an APK for your device. Accelerated downloads use a third-party service; 
 
 | Build | Official | Accelerated |
 | --- | --- | --- |
-| arm64-v8a | [GitHub](https://github.com/shellsec/lx-music-eink/releases/download/v1.9.2-eink.1/lx-music-mobile-v1.9.2-eink.1-arm64-v8a.apk) | [Accelerated](https://ghfast.top/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.2-eink.1/lx-music-mobile-v1.9.2-eink.1-arm64-v8a.apk) |
-| armeabi-v7a | [GitHub](https://github.com/shellsec/lx-music-eink/releases/download/v1.9.2-eink.1/lx-music-mobile-v1.9.2-eink.1-armeabi-v7a.apk) | [Accelerated](https://ghfast.top/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.2-eink.1/lx-music-mobile-v1.9.2-eink.1-armeabi-v7a.apk) |
-| universal | [GitHub](https://github.com/shellsec/lx-music-eink/releases/download/v1.9.2-eink.1/lx-music-mobile-v1.9.2-eink.1-universal.apk) | [Accelerated](https://ghfast.top/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.2-eink.1/lx-music-mobile-v1.9.2-eink.1-universal.apk) |
+| arm64-v8a | [GitHub](https://github.com/shellsec/lx-music-eink/releases/download/v1.9.3-eink.1/lx-music-mobile-v1.9.3-eink.1-arm64-v8a.apk) | [Accelerated](https://ghfast.top/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.3-eink.1/lx-music-mobile-v1.9.3-eink.1-arm64-v8a.apk) |
+| armeabi-v7a | [GitHub](https://github.com/shellsec/lx-music-eink/releases/download/v1.9.3-eink.1/lx-music-mobile-v1.9.3-eink.1-armeabi-v7a.apk) | [Accelerated](https://ghfast.top/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.3-eink.1/lx-music-mobile-v1.9.3-eink.1-armeabi-v7a.apk) |
+| universal | [GitHub](https://github.com/shellsec/lx-music-eink/releases/download/v1.9.3-eink.1/lx-music-mobile-v1.9.3-eink.1-universal.apk) | [Accelerated](https://ghfast.top/https://github.com/shellsec/lx-music-eink/releases/download/v1.9.3-eink.1/lx-music-mobile-v1.9.3-eink.1-universal.apk) |
 
 [All releases](https://github.com/shellsec/lx-music-eink/releases)
 
@@ -21,6 +21,10 @@ The photo shows the app installed on an e-ink device. It is not a first-launch s
 <img src="docs/screenshots/home.jpg" width="320" alt="App on an e-ink device">
 
 Import your own custom scripts from local files or URLs in Settings, then select a source. The source list starts empty. Multi-source automatic switching is disabled by default. When selected, failed playback URL requests retry only imported scripts in list order. Use the up and down buttons in source management to persist the retry order.
+
+Open Settings → Custom source management → Import → HTTP web configuration, then enable the HTTP page. Connect your e-ink device and phone to the same Wi-Fi. Scan the displayed QR code with the phone camera, or enter the displayed address in a browser, to import a source URL, upload a script, or save a subscription address. The e-ink device needs no camera.
+
+The service defaults to off. QR codes are generated locally for the current session. Closing the configuration window or moving the app to the background stops the server. No sources are provided or recommended.
 
 Save your own HTTPS subscription address in Settings, for example `https://example.com/sources.json`. The address defaults to empty and persists across restarts. Startup never fetches it. Use the manual update button to import or refresh a list containing `id`, `name`, and `url` entries, either as an array or inside a `sources` field.
 
